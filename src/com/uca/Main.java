@@ -4,9 +4,10 @@ public class Main {
 
     private static final int MAX_INSTRUCTIONS = 200;
     private static final int STACK_SIZE = 500;
+    private static int codeCounter = 0;
 
     private static PInstruction code[] = new PInstruction[MAX_INSTRUCTIONS];
-    private static int stack[] = new int[STACK_SIZE];
+    private static Data stack[] = new Data[STACK_SIZE];
 
     public static void main(String[] args) {
         if (args.length != 1){
@@ -22,7 +23,7 @@ public class Main {
         ErrorLog.init();
         FileManager file = new FileManager(filename);
         file.openFile();
-        int counter=0;
+        codeCounter=0;
         while (!file.isEndOfFile()){
             PInstruction p = new PInstruction();
             String line = file.getNextLine();
@@ -39,7 +40,6 @@ public class Main {
             line = line.substring(i+1, line.length());
 
             String di = line;
-            System.out.println("DI: "+di);
             if (pc == PCode.LIT){
                 LIT newP = null;
                 switch (ni){
@@ -59,15 +59,17 @@ public class Main {
                         newP = new LIT<Boolean>(Boolean.parseBoolean(di));
                         break;
                 }
+                newP.setPcode(p.getPcode());
+                newP.setNi(p.getNi());
                 p = newP;
             }else{
                 p.setDi(Integer.parseInt(di));
             }
 
-            code[counter] = p;
-            counter++;
+            code[codeCounter] = p;
+            codeCounter++;
         }
-        file.clearFile();
+        file.closeFile();
         ErrorLog.close();
 
     }
@@ -77,6 +79,88 @@ public class Main {
         int sp=-1;
         int bp=0;
         PInstruction i;
+
+        while (ip < codeCounter){
+            i = code[ip];
+            System.out.print("IP: "+ip+" ");
+            ip++;
+            switch (i.getPcode()){
+                case LIT:
+                    sp++;
+                    switch (i.getNi()){
+                        case 0:
+                            stack[sp] = new Data<Integer>(((LIT<Integer>)i).getValue());
+                            break;
+                        case 1:
+                            stack[sp] = new Data<Double>(((LIT<Double>)i).getValue());
+                            break;
+                        case 2:
+                            stack[sp] = new Data<Character>(((LIT<Character>)i).getValue());
+                            break;
+                        case 3:
+                            stack[sp] = new Data<String>(((LIT<String>)i).getValue());
+                            break;
+                        case 4:
+                            stack[sp] = new Data<Boolean>(((LIT<Boolean>)i).getValue());
+                            break;
+                    }
+                    System.out.println("LIT: cargando literal "+stack[sp].getValue().toString()+" en la direccion "+sp);
+                    break;
+                case OPR:
+                    switch (i.getDi()){
+                        case 1:
+                            System.out.println("OPR: Imprimir");
+                            System.out.print(stack[sp].getValue().toString());
+                            break;
+                        case 3:
+                            sp--;
+                            int res = (int)stack[sp].getValue()+(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Sumando "+(int)stack[sp].getValue()+" + "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Integer>(res);
+                            break;
+                    }
+                    break;
+                case CAR:
+                    sp++;
+                    stack[sp] = stack[base(i.getNi(),bp)+i.getDi()];
+                    System.out.println("CAR: cargando de la direccion "+(base(i.getNi(),bp)+i.getDi())+" el valor "+stack[sp].getValue().toString()+" en la direccion "+sp);
+                    break;
+                case ALM:
+                    System.out.println("ALM: almacenando "+stack[sp].getValue().toString()+" en la direccion "+(base(i.getNi(),bp)+i.getDi()));
+                    stack[base(i.getNi(),bp)+i.getDi()] = stack[sp];
+                    //sp--;
+                    break;
+                case LLA:
+                    stack[sp+1] = new Data<Integer>(base(i.getNi(), bp));
+                    stack[sp+2] = new Data<Integer>(bp);
+                    stack[sp+3] = new Data<Integer>(ip);
+                    bp = sp+1;
+                    ip = i.getDi();
+                    break;
+                case INS:
+                    sp += i.getDi();
+                    break;
+                case SAL:
+                    ip = i.getDi();
+                    break;
+                case SAC:
+                    if ((int)stack[sp].getValue() == 0){
+                        ip = i.getDi();
+                    }
+                    sp--;
+                    break;
+            }
+        }
+    }
+
+    public static int base(int ni, int b){
+        int b1;
+        b1 = b;
+        while (ni > 0){
+            b1 = (int) stack[b1].getValue();
+            ni--;
+        }
+        return b1;
     }
 
     public static void close(){
