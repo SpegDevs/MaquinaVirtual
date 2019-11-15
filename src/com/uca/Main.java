@@ -1,5 +1,7 @@
 package com.uca;
 
+import java.util.Scanner;
+
 public class Main {
 
     private static final int MAX_INSTRUCTIONS = 200;
@@ -104,18 +106,42 @@ public class Main {
                             stack[sp] = new Data<Boolean>(((LIT<Boolean>)i).getValue());
                             break;
                     }
-                    System.out.println("LIT: cargando literal "+stack[sp].getValue().toString()+" en la direccion "+sp);
+                    System.out.println("LIT: Cargando el valor "+stack[sp].getValue().toString()+" en la direccion "+sp);
                     break;
                 case OPR:
                     switch (i.getDi()){
                         case 1:
-                            System.out.println("OPR: Imprimir");
+                            System.out.println("OPR: Output");
                             System.out.print(stack[sp].getValue().toString());
+                            break;
+                        case 2:
+                            System.out.println("OPR: Input");
+                            Scanner scanner = new Scanner(System.in);
+                            sp++;
+                            stack[sp] = new Data<Integer>(scanner.nextInt());
                             break;
                         case 3:
                             sp--;
                             int res = (int)stack[sp].getValue()+(int)stack[sp+1].getValue();
-                            System.out.println("OPR: Sumando "+(int)stack[sp].getValue()+" + "+(int)stack[sp+1].getValue());
+                            System.out.println("OPR: Suma "+(int)stack[sp].getValue()+" + "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Integer>(res);
+                            break;
+                        case 4:
+                            sp--;
+                            res = (int)stack[sp].getValue()-(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Resta "+(int)stack[sp].getValue()+" - "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Integer>(res);
+                            break;
+                        case 5:
+                            sp--;
+                            res = (int)stack[sp].getValue()*(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Multiplicar "+(int)stack[sp].getValue()+" * "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Integer>(res);
+                            break;
+                        case 6:
+                            sp--;
+                            res = (int)stack[sp].getValue()/(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Dividir "+(int)stack[sp].getValue()+" / "+(int)stack[sp+1].getValue());
                             stack[sp] = new Data<Integer>(res);
                             break;
                     }
@@ -123,10 +149,10 @@ public class Main {
                 case CAR:
                     sp++;
                     stack[sp] = stack[base(i.getNi(),bp)+i.getDi()];
-                    System.out.println("CAR: cargando de la direccion "+(base(i.getNi(),bp)+i.getDi())+" el valor "+stack[sp].getValue().toString()+" en la direccion "+sp);
+                    System.out.println("CAR: Cargando de la direccion "+(base(i.getNi(),bp)+i.getDi())+" el valor "+stack[sp].getValue().toString()+" a la direccion "+sp);
                     break;
                 case ALM:
-                    System.out.println("ALM: almacenando "+stack[sp].getValue().toString()+" en la direccion "+(base(i.getNi(),bp)+i.getDi()));
+                    System.out.println("ALM: Almacenando "+stack[sp].getValue().toString()+" en la direccion "+(base(i.getNi(),bp)+i.getDi()));
                     stack[base(i.getNi(),bp)+i.getDi()] = stack[sp];
                     //sp--;
                     break;
