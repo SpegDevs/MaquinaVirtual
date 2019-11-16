@@ -221,6 +221,15 @@ public class Main {
                     }
                     sp--;
                     break;
+                case SAI:
+                    if ((boolean)stack[sp].getValue()){
+                        ip = i.getDi();
+                        System.out.println("SAC: Salto condicional a la linea "+i.getDi());
+                    }else{
+                        System.out.println("SAC: No salto");
+                    }
+                    sp--;
+                    break;
             }
         }
     }
