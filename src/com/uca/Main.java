@@ -29,6 +29,9 @@ public class Main {
         while (!file.isEndOfFile()){
             PInstruction p = new PInstruction();
             String line = file.getNextLine();
+            if (line.isEmpty()){
+                continue;
+            }
             int i = line.indexOf(' ');
             String pcodeString = line.substring(0,i);
             PCode pc = PCode.get(pcodeString);
@@ -84,7 +87,7 @@ public class Main {
 
         while (ip < codeCounter){
             i = code[ip];
-            System.out.print("IP: "+ip+" ");
+            System.out.print("IP: "+(ip)+" ");
             ip++;
             switch (i.getPcode()){
                 case LIT:
@@ -110,6 +113,8 @@ public class Main {
                     break;
                 case OPR:
                     switch (i.getDi()){
+                        case 0:
+                            break;
                         case 1:
                             System.out.println("OPR: Output");
                             System.out.print(stack[sp].getValue().toString());
@@ -144,6 +149,42 @@ public class Main {
                             System.out.println("OPR: Dividir "+(int)stack[sp].getValue()+" / "+(int)stack[sp+1].getValue());
                             stack[sp] = new Data<Integer>(res);
                             break;
+                        case 7:
+                            sp--;
+                            boolean res2 = (int)stack[sp].getValue()==(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Igual? "+(int)stack[sp].getValue()+" == "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
+                        case 8:
+                            sp--;
+                            res2 = (int)stack[sp].getValue()!=(int)stack[sp+1].getValue();
+                            System.out.println("OPR: No Igual? "+(int)stack[sp].getValue()+" != "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
+                        case 9:
+                            sp--;
+                            res2 = (int)stack[sp].getValue()<(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Menor? "+(int)stack[sp].getValue()+" < "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
+                        case 10:
+                            sp--;
+                            res2 = (int)stack[sp].getValue()<=(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Menor igual? "+(int)stack[sp].getValue()+" <= "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
+                        case 11:
+                            sp--;
+                            res2 = (int)stack[sp].getValue()>(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Mayor? "+(int)stack[sp].getValue()+" > "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
+                        case 12:
+                            sp--;
+                            res2 = (int)stack[sp].getValue()>=(int)stack[sp+1].getValue();
+                            System.out.println("OPR: Mayor igual? "+(int)stack[sp].getValue()+" >= "+(int)stack[sp+1].getValue());
+                            stack[sp] = new Data<Boolean>(res2);
+                            break;
                     }
                     break;
                 case CAR:
@@ -154,7 +195,7 @@ public class Main {
                 case ALM:
                     System.out.println("ALM: Almacenando "+stack[sp].getValue().toString()+" en la direccion "+(base(i.getNi(),bp)+i.getDi()));
                     stack[base(i.getNi(),bp)+i.getDi()] = stack[sp];
-                    //sp--;
+                    sp--;
                     break;
                 case LLA:
                     stack[sp+1] = new Data<Integer>(base(i.getNi(), bp));
@@ -164,14 +205,19 @@ public class Main {
                     ip = i.getDi();
                     break;
                 case INS:
+                    System.out.println("INS: Asignando "+i.getDi()+" espacios en el stack");
                     sp += i.getDi();
                     break;
                 case SAL:
                     ip = i.getDi();
+                    System.out.println("SAL: Salto incondicional a la linea "+i.getDi());
                     break;
                 case SAC:
-                    if ((int)stack[sp].getValue() == 0){
+                    if (!(boolean)stack[sp].getValue()){
                         ip = i.getDi();
+                        System.out.println("SAC: Salto condicional a la linea "+i.getDi());
+                    }else{
+                        System.out.println("SAC: No salto");
                     }
                     sp--;
                     break;
