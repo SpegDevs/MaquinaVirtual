@@ -185,6 +185,11 @@ public class Main {
                             System.out.println("OPR: Mayor igual? "+(int)stack[sp].getValue()+" >= "+(int)stack[sp+1].getValue());
                             stack[sp] = new Data<Boolean>(res2);
                             break;
+                        case 17:
+                            res = -(int)stack[sp].getValue();
+                            System.out.println("OPR: Negativo - "+(int)stack[sp].getValue());
+                            stack[sp] = new Data<Integer>(res);
+                            break;
                     }
                     break;
                 case CAR:
@@ -229,6 +234,16 @@ public class Main {
                         System.out.println("SAC: No salto");
                     }
                     sp--;
+                    break;
+                case ALO:
+                    System.out.println("ALO: Almacenando "+stack[sp].getValue().toString()+" en el arreglo "+(base(i.getNi(),bp)+i.getDi())+" posicion "+(int)stack[sp-1].getValue());
+                    stack[base(i.getNi(),bp)+i.getDi()+(int)stack[sp-1].getValue()] = stack[sp];
+                    sp -= 2;
+                    break;
+                case CAO:
+                    int offset = (int)stack[sp].getValue();
+                    stack[sp] = stack[base(i.getNi(),bp)+i.getDi()+offset];
+                    System.out.println("CAO: Cargando del arreglo "+(base(i.getNi(),bp)+i.getDi())+" posicion "+(int)stack[sp-1].getValue()+" el valor "+stack[sp].getValue().toString()+" a la direccion "+sp);
                     break;
             }
         }

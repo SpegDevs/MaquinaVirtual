@@ -9,7 +9,9 @@ public enum PCode {
     INS,
     SAL,
     SAC,
-    SAI;
+    SAI,
+    ALO,
+    CAO;
 
     static PCode get(String s){
         switch (s){
@@ -31,6 +33,10 @@ public enum PCode {
                 return SAC;
             case "SAI":
                 return SAI;
+            case "ALO":
+                return ALO;
+            case "CAO":
+                return CAO;
         }
         return null;
     }
