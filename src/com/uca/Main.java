@@ -10,6 +10,8 @@ public class Main {
 
     private static PInstruction code[] = new PInstruction[MAX_INSTRUCTIONS];
     private static Data stack[] = new Data[STACK_SIZE];
+    private static Data params[] = new Data[STACK_SIZE];
+    private static int paramCount = 0;
 
     public static void main(String[] args) {
         if (args.length != 1){
@@ -84,6 +86,9 @@ public class Main {
         int sp=-1;
         int bp=0;
         PInstruction i;
+        stack[0] = new Data<Integer>(0);
+        stack[1] = new Data<Integer>(0);
+        stack[2] = new Data<Integer>(0);
 
         while (ip < codeCounter){
             i = code[ip];
@@ -203,11 +208,19 @@ public class Main {
                     sp--;
                     break;
                 case LLA:
-                    stack[sp+1] = new Data<Integer>(base(i.getNi(), bp));
-                    stack[sp+2] = new Data<Integer>(bp);
-                    stack[sp+3] = new Data<Integer>(ip);
-                    bp = sp+1;
+                    sp++;
+                    stack[sp] = new Data<Integer>(base(i.getNi(), bp));
+                    stack[sp+1] = new Data<Integer>(bp);
+                    stack[sp+2] = new Data<Integer>(ip);
+                    bp = sp;
                     ip = i.getDi();
+                    System.out.println("LLA: Llamada a funcion en linea "+ip);
+                    int m=0;
+                    for (int k=paramCount-1; k>=0; k--){
+                        stack[sp+3+m] = params[k];
+                        m++;
+                        System.out.println("LLA: Cargando parametro "+params[k].getValue()+" a la direccion "+(sp+3+k));
+                    }
                     break;
                 case INS:
                     System.out.println("INS: Asignando "+i.getDi()+" espacios en el stack");
@@ -243,9 +256,28 @@ public class Main {
                 case CAO:
                     int offset = (int)stack[sp].getValue();
                     stack[sp] = stack[base(i.getNi(),bp)+i.getDi()+offset];
-                    System.out.println("CAO: Cargando del arreglo "+(base(i.getNi(),bp)+i.getDi())+" posicion "+(int)stack[sp-1].getValue()+" el valor "+stack[sp].getValue().toString()+" a la direccion "+sp);
+                    System.out.println("CAO: Cargando del arreglo "+(base(i.getNi(),bp)+i.getDi())+" posicion "+offset+" el valor "+stack[sp].getValue().toString()+" a la direccion "+sp);
+                    break;
+                case PAR:
+                    paramCount = i.getDi();
+                    for (int k=0; k<paramCount; k++){
+                        params[k] = stack[sp];
+                        sp--;
+                    }
+                    System.out.println("PAR: Almacenando "+paramCount+" parametros");
+                    break;
+                case RET:
+                    Data returnVal = stack[sp];
+                    sp = bp;
+                    ip = (int)stack[sp+2].getValue();
+                    bp = (int)stack[sp+1].getValue();
+                    stack[sp] = returnVal;
+                    System.out.println("RET: Retornar a la instruccion "+ip);
                     break;
             }
+            System.out.println("SP "+sp);
+            printStack();
+            System.out.println();
         }
     }
 
@@ -262,5 +294,16 @@ public class Main {
     public static void close(){
         ErrorLog.close();
         System.exit(0);
+    }
+
+    private static void printStack(){
+        for (int i=0; i<stack.length; i++){
+            if (stack[i] != null){
+                System.out.print(stack[i].getValue().toString()+" ");
+            }else{
+                System.out.print("_ ");
+            }
+        }
+        System.out.println();
     }
 }

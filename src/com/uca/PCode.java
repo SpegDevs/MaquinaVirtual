@@ -11,7 +11,9 @@ public enum PCode {
     SAC,
     SAI,
     ALO,
-    CAO;
+    CAO,
+    PAR,
+    RET;
 
     static PCode get(String s){
         switch (s){
@@ -37,6 +39,10 @@ public enum PCode {
                 return ALO;
             case "CAO":
                 return CAO;
+            case "PAR":
+                return PAR;
+            case "RET":
+                return RET;
         }
         return null;
     }
