@@ -41,5 +41,9 @@ LIT 0 5
 PAR 0 1
 LLA 0 1
 ALM 0 8
+LIT 3 "Resultado: "
 CAR 0 8
+OPR 0 3
+ALM 0 10
+CAR 0 10
 OPR 0 1

@@ -6,6 +6,7 @@ public class Main {
 
     private static final int MAX_INSTRUCTIONS = 200;
     private static final int STACK_SIZE = 500;
+    private static final boolean DEBUG = false;
     private static int codeCounter = 0;
 
     private static PInstruction code[] = new PInstruction[MAX_INSTRUCTIONS];
@@ -16,6 +17,7 @@ public class Main {
     private static int ip;
     private static int bp;
     private static int sp;
+    private static PInstruction i;
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -64,7 +66,7 @@ public class Main {
                         newP = new LIT<Character>(di.charAt(0));
                         break;
                     case 3:
-                        newP = new LIT<String>(di);
+                        newP = new LIT<String>(di.substring(1,di.length()-1));
                         break;
                     case 4:
                         newP = new LIT<Boolean>(Boolean.parseBoolean(di));
@@ -89,36 +91,35 @@ public class Main {
         ip = 0;
         sp = -1;
         bp = 0;
-        PInstruction i;
-        stack[0] = new Data<Integer>(0);
-        stack[1] = new Data<Integer>(0);
-        stack[2] = new Data<Integer>(0);
+        stack[0] = new Data<Integer>(0, Type.INT);
+        stack[1] = new Data<Integer>(0, Type.INT);
+        stack[2] = new Data<Integer>(0, Type.INT);
 
         while (ip < codeCounter) {
             i = code[ip];
-            System.out.print("IP: " + (ip) + " ");
+            log("IP: " + (ip) + " ");
             ip++;
             switch (i.getPcode()) {
                 case LIT:
                     sp++;
                     switch (i.getNi()) {
                         case 0:
-                            stack[sp] = new Data<Integer>(((LIT<Integer>) i).getValue());
+                            stack[sp] = new Data<Integer>(((LIT<Integer>) i).getValue(), Type.INT);
                             break;
                         case 1:
-                            stack[sp] = new Data<Double>(((LIT<Double>) i).getValue());
+                            stack[sp] = new Data<Double>(((LIT<Double>) i).getValue(), Type.DEC);
                             break;
                         case 2:
-                            stack[sp] = new Data<Character>(((LIT<Character>) i).getValue());
+                            stack[sp] = new Data<Character>(((LIT<Character>) i).getValue(), Type.CHA);
                             break;
                         case 3:
-                            stack[sp] = new Data<String>(((LIT<String>) i).getValue());
+                            stack[sp] = new Data<String>(((LIT<String>) i).getValue(), Type.STR);
                             break;
                         case 4:
-                            stack[sp] = new Data<Boolean>(((LIT<Boolean>) i).getValue());
+                            stack[sp] = new Data<Boolean>(((LIT<Boolean>) i).getValue(), Type.BOO);
                             break;
                     }
-                    System.out.println("LIT: Cargando el valor " + stack[sp].getValue().toString() + " en la direccion " + sp);
+                    log("LIT: Cargando el valor " + stack[sp].getValue().toString() + " en la direccion " + sp);
                     break;
                 case OPR:
                     switch (i.getDi()) {
@@ -211,68 +212,71 @@ public class Main {
                         case 29:
                             oprFileRead();
                             break;
+                        case 30:
+                            oprCast();
+                            break;
                     }
                     break;
                 case CAR:
                     sp++;
                     stack[sp] = stack[base(i.getNi(), bp) + i.getDi()];
-                    System.out.println("CAR: Cargando de la direccion " + (base(i.getNi(), bp) + i.getDi()) + " el valor " + stack[sp].getValue().toString() + " a la direccion " + sp);
+                    log("CAR: Cargando de la direccion " + (base(i.getNi(), bp) + i.getDi()) + " el valor " + stack[sp].getValue().toString() + " a la direccion " + sp);
                     break;
                 case ALM:
-                    System.out.println("ALM: Almacenando " + stack[sp].getValue().toString() + " en la direccion " + (base(i.getNi(), bp) + i.getDi()));
+                    log("ALM: Almacenando " + stack[sp].getValue().toString() + " en la direccion " + (base(i.getNi(), bp) + i.getDi()));
                     stack[base(i.getNi(), bp) + i.getDi()] = stack[sp];
                     sp--;
                     break;
                 case LLA:
                     sp++;
-                    stack[sp] = new Data<Integer>(base(i.getNi(), bp));
-                    stack[sp + 1] = new Data<Integer>(bp);
-                    stack[sp + 2] = new Data<Integer>(ip);
+                    stack[sp] = new Data<Integer>(base(i.getNi(), bp), Type.INT);
+                    stack[sp + 1] = new Data<Integer>(bp, Type.INT);
+                    stack[sp + 2] = new Data<Integer>(ip, Type.INT);
                     bp = sp;
                     ip = i.getDi();
-                    System.out.println("LLA: Llamada a funcion en linea " + ip);
+                    log("LLA: Llamada a funcion en linea " + ip);
                     int m = 0;
                     for (int k = paramCount - 1; k >= 0; k--) {
                         stack[sp + 3 + m] = params[k];
                         m++;
-                        System.out.println("LLA: Cargando parametro " + params[k].getValue() + " a la direccion " + (sp + 3 + k));
+                        log("LLA: Cargando parametro " + params[k].getValue() + " a la direccion " + (sp + 3 + k));
                     }
                     break;
                 case INS:
-                    System.out.println("INS: Asignando " + i.getDi() + " espacios en el stack");
+                    log("INS: Asignando " + i.getDi() + " espacios en el stack");
                     sp += i.getDi();
                     break;
                 case SAL:
                     ip = i.getDi();
-                    System.out.println("SAL: Salto incondicional a la linea " + i.getDi());
+                    log("SAL: Salto incondicional a la linea " + i.getDi());
                     break;
                 case SAC:
                     if (!(boolean) stack[sp].getValue()) {
                         ip = i.getDi();
-                        System.out.println("SAC: Salto condicional a la linea " + i.getDi());
+                        log("SAC: Salto condicional a la linea " + i.getDi());
                     } else {
-                        System.out.println("SAC: No salto");
+                        log("SAC: No salto");
                     }
                     sp--;
                     break;
                 case SAI:
                     if ((boolean) stack[sp].getValue()) {
                         ip = i.getDi();
-                        System.out.println("SAC: Salto condicional a la linea " + i.getDi());
+                        log("SAI: Salto condicional a la linea " + i.getDi());
                     } else {
-                        System.out.println("SAC: No salto");
+                        log("SAI: No salto");
                     }
                     sp--;
                     break;
                 case ALO:
-                    System.out.println("ALO: Almacenando " + stack[sp].getValue().toString() + " en el arreglo " + (base(i.getNi(), bp) + i.getDi()) + " posicion " + (int) stack[sp - 1].getValue());
+                    log("ALO: Almacenando " + stack[sp].getValue().toString() + " en el arreglo " + (base(i.getNi(), bp) + i.getDi()) + " posicion " + (int) stack[sp - 1].getValue());
                     stack[base(i.getNi(), bp) + i.getDi() + (int) stack[sp - 1].getValue()] = stack[sp];
                     sp -= 2;
                     break;
                 case CAO:
                     int offset = (int) stack[sp].getValue();
                     stack[sp] = stack[base(i.getNi(), bp) + i.getDi() + offset];
-                    System.out.println("CAO: Cargando del arreglo " + (base(i.getNi(), bp) + i.getDi()) + " posicion " + offset + " el valor " + stack[sp].getValue().toString() + " a la direccion " + sp);
+                    log("CAO: Cargando del arreglo " + (base(i.getNi(), bp) + i.getDi()) + " posicion " + offset + " el valor " + stack[sp].getValue().toString() + " a la direccion " + sp);
                     break;
                 case PAR:
                     paramCount = i.getDi();
@@ -280,7 +284,7 @@ public class Main {
                         params[k] = stack[sp];
                         sp--;
                     }
-                    System.out.println("PAR: Almacenando " + paramCount + " parametros");
+                    log("PAR: Almacenando " + paramCount + " parametros");
                     break;
                 case RET:
                     Data returnVal = stack[sp];
@@ -288,95 +292,109 @@ public class Main {
                     ip = (int) stack[sp + 2].getValue();
                     bp = (int) stack[sp + 1].getValue();
                     stack[sp] = returnVal;
-                    System.out.println("RET: Retornar a la instruccion " + ip);
+                    log("RET: Retornar a la instruccion " + ip);
                     break;
             }
-            System.out.println("SP " + sp);
+            log("SP " + sp);
             printStack();
-            System.out.println();
+            log("");
         }
     }
 
     private static void oprOut() {
-        System.out.println("OPR: Output");
-        System.out.print(stack[sp].getValue().toString());
+        log("OPR: Output");
+        System.out.println(stack[sp].getValue().toString());
     }
 
     private static void oprIn() {
-        System.out.println("OPR: Input");
+        log("OPR: Input");
         Scanner scanner = new Scanner(System.in);
         sp++;
-        stack[sp] = new Data<Integer>(scanner.nextInt());
+        stack[sp] = new Data<Integer>(scanner.nextInt(), Type.INT);
     }
 
     private static void oprSum() {
         sp--;
-        int res = (int) stack[sp].getValue() + (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Suma " + (int) stack[sp].getValue() + " + " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Integer>(res);
+        log("OPR: Suma " + stack[sp].getValue() + " + " + stack[sp + 1].getValue());
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT) {
+            int res = (int) stack[sp].getValue() + (int) stack[sp + 1].getValue();
+            stack[sp] = new Data<Integer>(res, Type.INT);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            double res = (double) stack[sp].getValue() + (double) stack[sp + 1].getValue();
+            stack[sp] = new Data<Double>(res, Type.DEC);
+        } else if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.DEC){
+            double res = (int) stack[sp].getValue() + (double) stack[sp + 1].getValue();
+            stack[sp] = new Data<Double>(res, Type.DEC);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.INT){
+            double res = (double) stack[sp].getValue() + (int) stack[sp + 1].getValue();
+            stack[sp] = new Data<Double>(res, Type.DEC);
+        } else if (stack[sp].getType() == Type.STR || stack[sp+1].getType() == Type.STR){
+            String res = stack[sp].getValue().toString() + stack[sp + 1].getValue().toString();
+            stack[sp] = new Data<String>(res, Type.STR);
+        }
     }
 
     private static void oprSubtract() {
         sp--;
+        log("OPR: Resta " + stack[sp].getValue() + " - " + stack[sp + 1].getValue());
         int res = (int) stack[sp].getValue() - (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Resta " + (int) stack[sp].getValue() + " - " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Integer>(res);
+        stack[sp] = new Data<Integer>(res, Type.INT);
     }
 
     private static void oprMultiply() {
         sp--;
+        log("OPR: Multiplicar " + stack[sp].getValue() + " * " + stack[sp + 1].getValue());
         int res = (int) stack[sp].getValue() * (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Multiplicar " + (int) stack[sp].getValue() + " * " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Integer>(res);
+        stack[sp] = new Data<Integer>(res, Type.INT);
     }
 
     private static void oprDivide() {
         sp--;
+        log("OPR: Dividir " + stack[sp].getValue() + " / " + stack[sp + 1].getValue());
         int res = (int) stack[sp].getValue() / (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Dividir " + (int) stack[sp].getValue() + " / " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Integer>(res);
+        stack[sp] = new Data<Integer>(res, Type.INT);
     }
 
     private static void oprEqual() {
         sp--;
+        log("OPR: Igual? " + stack[sp].getValue() + " == " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() == (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Igual? " + (int) stack[sp].getValue() + " == " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprNotEqual() {
         sp--;
+        log("OPR: No Igual? " + stack[sp].getValue() + " != " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() != (int) stack[sp + 1].getValue();
-        System.out.println("OPR: No Igual? " + (int) stack[sp].getValue() + " != " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprLessThan() {
         sp--;
+        log("OPR: Menor? " + stack[sp].getValue() + " < " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() < (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Menor? " + (int) stack[sp].getValue() + " < " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprLessThanEqual() {
         sp--;
+        log("OPR: Menor igual? " + stack[sp].getValue() + " <= " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() <= (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Menor igual? " + (int) stack[sp].getValue() + " <= " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprGreaterThan() {
         sp--;
+        log("OPR: Mayor? " + stack[sp].getValue() + " > " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() > (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Mayor? " + (int) stack[sp].getValue() + " > " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprGreaterThanEqual() {
         sp--;
+        log("OPR: Mayor igual? " + stack[sp].getValue() + " >= " + stack[sp + 1].getValue());
         boolean res = (int) stack[sp].getValue() >= (int) stack[sp + 1].getValue();
-        System.out.println("OPR: Mayor igual? " + (int) stack[sp].getValue() + " >= " + (int) stack[sp + 1].getValue());
-        stack[sp] = new Data<Boolean>(res);
+        stack[sp] = new Data<Boolean>(res, Type.BOO);
     }
 
     private static void oprAnd() {
@@ -397,8 +415,8 @@ public class Main {
 
     private static void oprNegative() {
         int res = -(int) stack[sp].getValue();
-        System.out.println("OPR: Negativo - " + (int) stack[sp].getValue());
-        stack[sp] = new Data<Integer>(res);
+        log("OPR: Negativo - " + (int) stack[sp].getValue());
+        stack[sp] = new Data<Integer>(res, Type.INT);
     }
 
     private static void oprMax() {
@@ -449,6 +467,33 @@ public class Main {
 
     }
 
+    private static void oprCast(){
+        int type = i.getNi();
+        switch (type){
+            case 0:
+                if (stack[sp].getType() == Type.DEC){
+                    stack[sp] = new Data<Integer>((int)Math.floor((double)stack[sp].getValue()), Type.INT);
+                }else if (stack[sp].getType() == Type.CHA){
+                    stack[sp] = new Data<Integer>(Character.getNumericValue((char)stack[sp].getValue()), Type.INT);
+                }
+                break;
+            case 1:
+                if (stack[sp].getType() == Type.INT){
+                    stack[sp] = new Data<Double>((int)stack[sp].getValue()*1.0, Type.DEC);
+                }
+                break;
+            case 2:
+                break;
+            case 3:
+                if (stack[sp].getType() == Type.CHA){
+                    stack[sp] = new Data<String>((char)stack[sp].getValue()+"", Type.STR);
+                }
+                break;
+            case 4:
+                break;
+        }
+    }
+
     private static int base(int ni, int b) {
         int b1;
         b1 = b;
@@ -465,13 +510,21 @@ public class Main {
     }
 
     private static void printStack() {
-        for (int i = 0; i < stack.length; i++) {
-            if (stack[i] != null) {
-                System.out.print(stack[i].getValue().toString() + " ");
-            } else {
-                System.out.print("_ ");
+        if (DEBUG) {
+            for (int i = 0; i < stack.length; i++) {
+                if (stack[i] != null) {
+                    System.out.print(stack[i].getValue().toString() + " ");
+                } else {
+                    System.out.print("_ ");
+                }
             }
+            System.out.println();
         }
-        System.out.println();
+    }
+
+    private static void log(String msg){
+        if (DEBUG){
+            System.out.println(msg);
+        }
     }
 }
