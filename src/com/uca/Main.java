@@ -24,13 +24,19 @@ public class Main {
             System.out.println("Error: No se ha proporcionado el nombre del programa");
             return;
         }
+        ErrorLog.init();
         String fileName = args[0];
         read(fileName);
-        run();
+        try {
+            run();
+        } catch (Exception e) {
+            e.printStackTrace();
+            ErrorLog.logError("Error: Runtime error");
+        }
+        ErrorLog.close();
     }
 
     private static void read(String filename) {
-        ErrorLog.init();
         FileManager file = new FileManager(filename);
         file.openFile();
         codeCounter = 0;
@@ -83,11 +89,9 @@ public class Main {
             codeCounter++;
         }
         file.closeFile();
-        ErrorLog.close();
-
     }
 
-    private static void run() {
+    private static void run() throws Exception {
         ip = 0;
         sp = -1;
         bp = 0;
@@ -304,16 +308,16 @@ public class Main {
         }
     }
 
-    private static void oprOut() {
+    private static void oprOut() throws Exception {
         log("OPR: Output");
         System.out.println(stack[sp].getValue().toString());
     }
 
-    private static void oprIn() {
+    private static void oprIn() throws Exception {
         log("OPR: Input");
         Scanner scanner = new Scanner(System.in);
         sp++;
-        switch (i.getNi()){
+        switch (i.getNi()) {
             case 0:
                 stack[sp] = createInt(Integer.parseInt(scanner.nextLine()));
                 break;
@@ -332,7 +336,7 @@ public class Main {
         }
     }
 
-    private static void oprSum() {
+    private static void oprSum() throws Exception {
         sp--;
         log("OPR: Suma " + stack[sp].getValue() + " + " + stack[sp + 1].getValue());
         if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
@@ -353,7 +357,7 @@ public class Main {
         }
     }
 
-    private static void oprSubtract() {
+    private static void oprSubtract() throws Exception {
         sp--;
         log("OPR: Resta " + stack[sp].getValue() + " - " + stack[sp + 1].getValue());
         if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
@@ -371,7 +375,7 @@ public class Main {
         }
     }
 
-    private static void oprMultiply() {
+    private static void oprMultiply() throws Exception {
         sp--;
         log("OPR: Multiplicar " + stack[sp].getValue() + " * " + stack[sp + 1].getValue());
         if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
@@ -389,7 +393,7 @@ public class Main {
         }
     }
 
-    private static void oprDivide() {
+    private static void oprDivide() throws Exception {
         sp--;
         log("OPR: Dividir " + stack[sp].getValue() + " / " + stack[sp + 1].getValue());
         if (stack[sp + 1].getType() == Type.INT && (int) stack[sp + 1].getValue() == 0) {
@@ -413,99 +417,99 @@ public class Main {
         }
     }
 
-    private static void oprEqual() {
+    private static void oprEqual() throws Exception {
         sp--;
         log("OPR: Igual? " + stack[sp].getValue() + " == " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() == (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() == (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() == (char)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.STR && stack[sp+1].getType() == Type.STR){
-            res = ((String)stack[sp].getValue()).equals((String)stack[sp + 1].getValue());
-        } else if (stack[sp].getType() == Type.BOO && stack[sp+1].getType() == Type.BOO){
-            res = (boolean)stack[sp].getValue() == (boolean)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() == (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() == (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() == (char) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.STR && stack[sp + 1].getType() == Type.STR) {
+            res = ((String) stack[sp].getValue()).equals((String) stack[sp + 1].getValue());
+        } else if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
+            res = (boolean) stack[sp].getValue() == (boolean) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprNotEqual() {
+    private static void oprNotEqual() throws Exception {
         sp--;
         log("OPR: No Igual? " + stack[sp].getValue() + " != " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() != (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() != (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() != (char)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.STR && stack[sp+1].getType() == Type.STR){
-            res = !((String)stack[sp].getValue()).equals((String)stack[sp + 1].getValue());
-        } else if (stack[sp].getType() == Type.BOO && stack[sp+1].getType() == Type.BOO){
-            res = (boolean)stack[sp].getValue() != (boolean)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() != (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() != (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() != (char) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.STR && stack[sp + 1].getType() == Type.STR) {
+            res = !((String) stack[sp].getValue()).equals((String) stack[sp + 1].getValue());
+        } else if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
+            res = (boolean) stack[sp].getValue() != (boolean) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprLessThan() {
+    private static void oprLessThan() throws Exception {
         sp--;
         log("OPR: Menor? " + stack[sp].getValue() + " < " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() < (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() < (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() < (char)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() < (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() < (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() < (char) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprLessThanEqual() {
+    private static void oprLessThanEqual() throws Exception {
         sp--;
         log("OPR: Menor igual? " + stack[sp].getValue() + " <= " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() <= (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() <= (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() <= (char)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() <= (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() <= (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() <= (char) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprGreaterThan() {
+    private static void oprGreaterThan() throws Exception {
         sp--;
         log("OPR: Mayor? " + stack[sp].getValue() + " > " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() > (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() > (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() > (char)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() > (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() > (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() > (char) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprGreaterThanEqual() {
+    private static void oprGreaterThanEqual() throws Exception {
         sp--;
         log("OPR: Mayor igual? " + stack[sp].getValue() + " >= " + stack[sp + 1].getValue());
         boolean res = false;
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
-            res = (int)stack[sp].getValue() >= (int)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
-            res = (double)stack[sp].getValue() >= (double)stack[sp + 1].getValue();
-        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
-            res = (char)stack[sp].getValue() >= (char)stack[sp + 1].getValue();
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            res = (int) stack[sp].getValue() >= (int) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            res = (double) stack[sp].getValue() >= (double) stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            res = (char) stack[sp].getValue() >= (char) stack[sp + 1].getValue();
         }
         stack[sp] = createBoolean(res);
     }
 
-    private static void oprAnd() {
+    private static void oprAnd() throws Exception {
         sp--;
         log("OPR: And " + stack[sp].getValue());
         if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
@@ -514,7 +518,7 @@ public class Main {
         }
     }
 
-    private static void oprOr() {
+    private static void oprOr() throws Exception {
         sp--;
         log("OPR: Or " + stack[sp].getValue());
         if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
@@ -523,7 +527,7 @@ public class Main {
         }
     }
 
-    private static void oprNot() {
+    private static void oprNot() throws Exception {
         log("OPR: Not " + stack[sp].getValue());
         if (stack[sp].getType() == Type.BOO) {
             boolean res = !(boolean) stack[sp].getValue();
@@ -531,11 +535,11 @@ public class Main {
         }
     }
 
-    private static void oprPositive() {
+    private static void oprPositive() throws Exception {
         log("OPR: Positivo + " + stack[sp].getValue());
     }
 
-    private static void oprNegative() {
+    private static void oprNegative() throws Exception {
         log("OPR: Negativo - " + stack[sp].getValue());
         if (stack[sp].getType() == Type.INT) {
             int res = -(int) stack[sp].getValue();
@@ -546,55 +550,55 @@ public class Main {
         }
     }
 
-    private static void oprMax() {
+    private static void oprMax() throws Exception {
 
     }
 
-    private static void oprMin() {
+    private static void oprMin() throws Exception {
 
     }
 
-    private static void oprRandom() {
+    private static void oprRandom() throws Exception {
 
     }
 
-    private static void oprFactorial() {
+    private static void oprFactorial() throws Exception {
 
     }
 
-    private static void oprPow() {
+    private static void oprPow() throws Exception {
 
     }
 
-    private static void oprSqrt() {
+    private static void oprSqrt() throws Exception {
 
     }
 
-    private static void oprCeil() {
+    private static void oprCeil() throws Exception {
 
     }
 
-    private static void oprFloor() {
+    private static void oprFloor() throws Exception {
 
     }
 
-    private static void oprRound() {
+    private static void oprRound() throws Exception {
 
     }
 
-    private static void oprSubstring() {
+    private static void oprSubstring() throws Exception {
 
     }
 
-    private static void oprFileWrite() {
+    private static void oprFileWrite() throws Exception {
 
     }
 
-    private static void oprFileRead() {
+    private static void oprFileRead() throws Exception {
 
     }
 
-    private static void oprCast() {
+    private static void oprCast() throws Exception {
         log("OPR: Cast");
         int type = i.getNi();
         switch (type) {
