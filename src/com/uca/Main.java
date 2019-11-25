@@ -282,6 +282,10 @@ public class Main {
                     break;
                 case CAO:
                     int offset = (int) stack[sp].getValue();
+                    if (stack[base(i.getNi(), bp) + i.getDi() + offset] == null){
+                        ErrorLog.logError("Error: No se ha inicializado el arreglo en la posicion "+offset);
+                        Main.close();
+                    }
                     stack[sp] = stack[base(i.getNi(), bp) + i.getDi() + offset];
                     log("CAO: Cargando del arreglo " + (base(i.getNi(), bp) + i.getDi()) + " posicion " + offset + " el valor " + stack[sp].getValue().toString() + " a la direccion " + sp);
                     break;
