@@ -66,7 +66,7 @@ public class Main {
                         newP = new LIT<Character>(di.charAt(0));
                         break;
                     case 3:
-                        newP = new LIT<String>(di.substring(1,di.length()-1));
+                        newP = new LIT<String>(di.substring(1, di.length() - 1));
                         break;
                     case 4:
                         newP = new LIT<Boolean>(Boolean.parseBoolean(di));
@@ -91,11 +91,14 @@ public class Main {
         ip = 0;
         sp = -1;
         bp = 0;
-        stack[0] = new Data<Integer>(0, Type.INT);
-        stack[1] = new Data<Integer>(0, Type.INT);
-        stack[2] = new Data<Integer>(0, Type.INT);
+        stack[0] = createInt(0);
+        stack[1] = createInt(0);
+        stack[2] = createInt(0);
 
         while (ip < codeCounter) {
+            if (sp > STACK_SIZE) {
+                ErrorLog.logError("Error: Stack overflow");
+            }
             i = code[ip];
             log("IP: " + (ip) + " ");
             ip++;
@@ -104,19 +107,19 @@ public class Main {
                     sp++;
                     switch (i.getNi()) {
                         case 0:
-                            stack[sp] = new Data<Integer>(((LIT<Integer>) i).getValue(), Type.INT);
+                            stack[sp] = createInt(((LIT<Integer>) i).getValue());
                             break;
                         case 1:
-                            stack[sp] = new Data<Double>(((LIT<Double>) i).getValue(), Type.DEC);
+                            stack[sp] = createDouble(((LIT<Double>) i).getValue());
                             break;
                         case 2:
-                            stack[sp] = new Data<Character>(((LIT<Character>) i).getValue(), Type.CHA);
+                            stack[sp] = createChar(((LIT<Character>) i).getValue());
                             break;
                         case 3:
-                            stack[sp] = new Data<String>(((LIT<String>) i).getValue(), Type.STR);
+                            stack[sp] = createString(((LIT<String>) i).getValue());
                             break;
                         case 4:
-                            stack[sp] = new Data<Boolean>(((LIT<Boolean>) i).getValue(), Type.BOO);
+                            stack[sp] = createBoolean(((LIT<Boolean>) i).getValue());
                             break;
                     }
                     log("LIT: Cargando el valor " + stack[sp].getValue().toString() + " en la direccion " + sp);
@@ -229,9 +232,9 @@ public class Main {
                     break;
                 case LLA:
                     sp++;
-                    stack[sp] = new Data<Integer>(base(i.getNi(), bp), Type.INT);
-                    stack[sp + 1] = new Data<Integer>(bp, Type.INT);
-                    stack[sp + 2] = new Data<Integer>(ip, Type.INT);
+                    stack[sp] = createInt(base(i.getNi(), bp));
+                    stack[sp + 1] = createInt(bp);
+                    stack[sp + 2] = createInt(ip);
                     bp = sp;
                     ip = i.getDi();
                     log("LLA: Llamada a funcion en linea " + ip);
@@ -310,113 +313,237 @@ public class Main {
         log("OPR: Input");
         Scanner scanner = new Scanner(System.in);
         sp++;
-        stack[sp] = new Data<Integer>(scanner.nextInt(), Type.INT);
+        switch (i.getNi()){
+            case 0:
+                stack[sp] = createInt(Integer.parseInt(scanner.nextLine()));
+                break;
+            case 1:
+                stack[sp] = createDouble(Double.parseDouble(scanner.nextLine()));
+                break;
+            case 2:
+                stack[sp] = createChar(scanner.nextLine().charAt(0));
+                break;
+            case 3:
+                stack[sp] = createString(scanner.nextLine());
+                break;
+            case 4:
+                stack[sp] = createBoolean(Boolean.parseBoolean(scanner.nextLine()));
+                break;
+        }
     }
 
     private static void oprSum() {
         sp--;
         log("OPR: Suma " + stack[sp].getValue() + " + " + stack[sp + 1].getValue());
-        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT) {
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
             int res = (int) stack[sp].getValue() + (int) stack[sp + 1].getValue();
-            stack[sp] = new Data<Integer>(res, Type.INT);
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            stack[sp] = createInt(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
             double res = (double) stack[sp].getValue() + (double) stack[sp + 1].getValue();
-            stack[sp] = new Data<Double>(res, Type.DEC);
-        } else if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.DEC){
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.DEC) {
             double res = (int) stack[sp].getValue() + (double) stack[sp + 1].getValue();
-            stack[sp] = new Data<Double>(res, Type.DEC);
-        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.INT){
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.INT) {
             double res = (double) stack[sp].getValue() + (int) stack[sp + 1].getValue();
-            stack[sp] = new Data<Double>(res, Type.DEC);
-        } else if (stack[sp].getType() == Type.STR || stack[sp+1].getType() == Type.STR){
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.STR || stack[sp + 1].getType() == Type.STR) {
             String res = stack[sp].getValue().toString() + stack[sp + 1].getValue().toString();
-            stack[sp] = new Data<String>(res, Type.STR);
+            stack[sp] = createString(res);
         }
     }
 
     private static void oprSubtract() {
         sp--;
         log("OPR: Resta " + stack[sp].getValue() + " - " + stack[sp + 1].getValue());
-        int res = (int) stack[sp].getValue() - (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Integer>(res, Type.INT);
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            int res = (int) stack[sp].getValue() - (int) stack[sp + 1].getValue();
+            stack[sp] = createInt(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            double res = (double) stack[sp].getValue() - (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.DEC) {
+            double res = (int) stack[sp].getValue() - (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.INT) {
+            double res = (double) stack[sp].getValue() - (int) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        }
     }
 
     private static void oprMultiply() {
         sp--;
         log("OPR: Multiplicar " + stack[sp].getValue() + " * " + stack[sp + 1].getValue());
-        int res = (int) stack[sp].getValue() * (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Integer>(res, Type.INT);
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            int res = (int) stack[sp].getValue() * (int) stack[sp + 1].getValue();
+            stack[sp] = createInt(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            double res = (double) stack[sp].getValue() * (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.DEC) {
+            double res = (int) stack[sp].getValue() * (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.INT) {
+            double res = (double) stack[sp].getValue() * (int) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        }
     }
 
     private static void oprDivide() {
         sp--;
         log("OPR: Dividir " + stack[sp].getValue() + " / " + stack[sp + 1].getValue());
-        int res = (int) stack[sp].getValue() / (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Integer>(res, Type.INT);
+        if (stack[sp + 1].getType() == Type.INT && (int) stack[sp + 1].getValue() == 0) {
+            ErrorLog.logError("Error: Division entre 0");
+        }
+        if (stack[sp + 1].getType() == Type.DEC && (double) stack[sp + 1].getValue() == 0.0) {
+            ErrorLog.logError("Error: Division entre 0");
+        }
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            int res = (int) stack[sp].getValue() / (int) stack[sp + 1].getValue();
+            stack[sp] = createInt(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            double res = (double) stack[sp].getValue() / (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.DEC) {
+            double res = (int) stack[sp].getValue() / (double) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.INT) {
+            double res = (double) stack[sp].getValue() / (int) stack[sp + 1].getValue();
+            stack[sp] = createDouble(res);
+        }
     }
 
     private static void oprEqual() {
         sp--;
         log("OPR: Igual? " + stack[sp].getValue() + " == " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() == (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() == (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() == (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() == (char)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.STR && stack[sp+1].getType() == Type.STR){
+            res = ((String)stack[sp].getValue()).equals((String)stack[sp + 1].getValue());
+        } else if (stack[sp].getType() == Type.BOO && stack[sp+1].getType() == Type.BOO){
+            res = (boolean)stack[sp].getValue() == (boolean)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprNotEqual() {
         sp--;
         log("OPR: No Igual? " + stack[sp].getValue() + " != " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() != (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() != (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() != (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() != (char)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.STR && stack[sp+1].getType() == Type.STR){
+            res = !((String)stack[sp].getValue()).equals((String)stack[sp + 1].getValue());
+        } else if (stack[sp].getType() == Type.BOO && stack[sp+1].getType() == Type.BOO){
+            res = (boolean)stack[sp].getValue() != (boolean)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprLessThan() {
         sp--;
         log("OPR: Menor? " + stack[sp].getValue() + " < " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() < (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() < (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() < (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() < (char)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprLessThanEqual() {
         sp--;
         log("OPR: Menor igual? " + stack[sp].getValue() + " <= " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() <= (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() <= (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() <= (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() <= (char)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprGreaterThan() {
         sp--;
         log("OPR: Mayor? " + stack[sp].getValue() + " > " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() > (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() > (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() > (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() > (char)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprGreaterThanEqual() {
         sp--;
         log("OPR: Mayor igual? " + stack[sp].getValue() + " >= " + stack[sp + 1].getValue());
-        boolean res = (int) stack[sp].getValue() >= (int) stack[sp + 1].getValue();
-        stack[sp] = new Data<Boolean>(res, Type.BOO);
+        boolean res = false;
+        if (stack[sp].getType() == Type.INT && stack[sp+1].getType() == Type.INT){
+            res = (int)stack[sp].getValue() >= (int)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.DEC && stack[sp+1].getType() == Type.DEC){
+            res = (double)stack[sp].getValue() >= (double)stack[sp + 1].getValue();
+        } else if (stack[sp].getType() == Type.CHA && stack[sp+1].getType() == Type.CHA){
+            res = (char)stack[sp].getValue() >= (char)stack[sp + 1].getValue();
+        }
+        stack[sp] = createBoolean(res);
     }
 
     private static void oprAnd() {
-
+        sp--;
+        log("OPR: And " + stack[sp].getValue());
+        if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
+            boolean res = (boolean) stack[sp].getValue() && (boolean) stack[sp + 1].getValue();
+            stack[sp] = createBoolean(res);
+        }
     }
 
     private static void oprOr() {
-
+        sp--;
+        log("OPR: Or " + stack[sp].getValue());
+        if (stack[sp].getType() == Type.BOO && stack[sp + 1].getType() == Type.BOO) {
+            boolean res = (boolean) stack[sp].getValue() || (boolean) stack[sp + 1].getValue();
+            stack[sp] = createBoolean(res);
+        }
     }
 
     private static void oprNot() {
-
+        log("OPR: Not " + stack[sp].getValue());
+        if (stack[sp].getType() == Type.BOO) {
+            boolean res = !(boolean) stack[sp].getValue();
+            stack[sp] = createBoolean(res);
+        }
     }
 
     private static void oprPositive() {
-
+        log("OPR: Positivo + " + stack[sp].getValue());
     }
 
     private static void oprNegative() {
-        int res = -(int) stack[sp].getValue();
-        log("OPR: Negativo - " + (int) stack[sp].getValue());
-        stack[sp] = new Data<Integer>(res, Type.INT);
+        log("OPR: Negativo - " + stack[sp].getValue());
+        if (stack[sp].getType() == Type.INT) {
+            int res = -(int) stack[sp].getValue();
+            stack[sp] = createInt(res);
+        } else if (stack[sp].getType() == Type.DEC) {
+            double res = -(double) stack[sp].getValue();
+            stack[sp] = createDouble(res);
+        }
     }
 
     private static void oprMax() {
@@ -427,7 +554,7 @@ public class Main {
 
     }
 
-    private static void oprRandom(){
+    private static void oprRandom() {
 
     }
 
@@ -467,26 +594,27 @@ public class Main {
 
     }
 
-    private static void oprCast(){
+    private static void oprCast() {
+        log("OPR: Cast");
         int type = i.getNi();
-        switch (type){
+        switch (type) {
             case 0:
-                if (stack[sp].getType() == Type.DEC){
-                    stack[sp] = new Data<Integer>((int)Math.floor((double)stack[sp].getValue()), Type.INT);
-                }else if (stack[sp].getType() == Type.CHA){
-                    stack[sp] = new Data<Integer>(Character.getNumericValue((char)stack[sp].getValue()), Type.INT);
+                if (stack[sp].getType() == Type.DEC) {
+                    stack[sp] = createInt((int) Math.floor((double) stack[sp].getValue()));
+                } else if (stack[sp].getType() == Type.CHA) {
+                    stack[sp] = createInt(Character.getNumericValue((char) stack[sp].getValue()));
                 }
                 break;
             case 1:
-                if (stack[sp].getType() == Type.INT){
-                    stack[sp] = new Data<Double>((int)stack[sp].getValue()*1.0, Type.DEC);
+                if (stack[sp].getType() == Type.INT) {
+                    stack[sp] = createDouble((int) stack[sp].getValue() * 1.0);
                 }
                 break;
             case 2:
                 break;
             case 3:
-                if (stack[sp].getType() == Type.CHA){
-                    stack[sp] = new Data<String>((char)stack[sp].getValue()+"", Type.STR);
+                if (stack[sp].getType() == Type.CHA) {
+                    stack[sp] = createString((char) stack[sp].getValue() + "");
                 }
                 break;
             case 4:
@@ -502,6 +630,26 @@ public class Main {
             ni--;
         }
         return b1;
+    }
+
+    private static Data createInt(int val) {
+        return new Data<Integer>(val, Type.INT);
+    }
+
+    private static Data createDouble(double val) {
+        return new Data<Double>(val, Type.DEC);
+    }
+
+    private static Data createChar(char val) {
+        return new Data<Character>(val, Type.CHA);
+    }
+
+    private static Data createString(String val) {
+        return new Data<String>(val, Type.STR);
+    }
+
+    private static Data createBoolean(boolean val) {
+        return new Data<Boolean>(val, Type.BOO);
     }
 
     public static void close() {
@@ -522,8 +670,8 @@ public class Main {
         }
     }
 
-    private static void log(String msg){
-        if (DEBUG){
+    private static void log(String msg) {
+        if (DEBUG) {
             System.out.println(msg);
         }
     }
