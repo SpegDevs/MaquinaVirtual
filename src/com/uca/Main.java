@@ -1,6 +1,8 @@
 package com.uca;
 
+import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Main {
 
@@ -555,39 +557,141 @@ public class Main {
     }
 
     private static void oprMax() throws Exception {
-
+        sp--;
+        log("OPR: Max between two " + stack[sp].getValue() + " ? " + stack[sp + 1].getValue());
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            if((int) stack[sp].getValue() > (int) stack[sp + 1].getValue()){
+                stack[sp]=createInt((int) stack[sp].getValue());
+            }else {
+                stack[sp]=createInt((int) stack[sp + 1].getValue());
+            }
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            if((double) stack[sp].getValue() > (double) stack[sp + 1].getValue()){
+                stack[sp]=createDouble((double) stack[sp].getValue());
+            }else {
+                stack[sp]=createDouble((double) stack[sp + 1].getValue());
+            }
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            if((char) stack[sp].getValue() > (char) stack[sp + 1].getValue()){
+                stack[sp]=createChar((char) stack[sp].getValue());
+            }else {
+                stack[sp]=createChar((char) stack[sp + 1].getValue());
+            }
+        }
     }
 
     private static void oprMin() throws Exception {
-
+        sp--;
+        log("OPR: Min between two " + stack[sp].getValue() + " ? " + stack[sp + 1].getValue());
+        if (stack[sp].getType() == Type.INT && stack[sp + 1].getType() == Type.INT) {
+            if((int) stack[sp].getValue() < (int) stack[sp + 1].getValue()){
+                stack[sp]=createInt((int) stack[sp].getValue());
+            }else {
+                stack[sp]=createInt((int) stack[sp + 1].getValue());
+            }
+        } else if (stack[sp].getType() == Type.DEC && stack[sp + 1].getType() == Type.DEC) {
+            if((double) stack[sp].getValue() < (double) stack[sp + 1].getValue()){
+                stack[sp]=createDouble((double) stack[sp].getValue());
+            }else {
+                stack[sp]=createDouble((double) stack[sp + 1].getValue());
+            }
+        } else if (stack[sp].getType() == Type.CHA && stack[sp + 1].getType() == Type.CHA) {
+            if((char) stack[sp].getValue() < (char) stack[sp + 1].getValue()){
+                stack[sp]=createChar((char) stack[sp].getValue());
+            }else {
+                stack[sp]=createChar((char) stack[sp + 1].getValue());
+            }
+        }
     }
 
     private static void oprRandom() throws Exception {
-
+        log("OPR Random between" +(int)stack[sp].getValue() +"And"+ (int)stack[sp+1].getValue());
+        sp--;
+        int randomNum = ThreadLocalRandom.current().nextInt((int)stack[sp].getValue(), (int)stack[sp+1].getValue() + 1);
+        stack[sp]=createInt(randomNum);
     }
 
     private static void oprFactorial() throws Exception {
+        log("OPR Factorial " + stack[sp].getValue());
+        int factorial =1;
+        int number = (int) stack[sp].getValue();
 
+        while(number != 0) {
+            factorial = factorial * number;
+            number--;
+        }
+        stack[sp]=createInt(factorial);
     }
 
     private static void oprPow() throws Exception {
-
+        sp--;
+        log("Pow " + stack[sp] +"^"+stack[sp+1]);
+        if(stack[sp].getType()==Type.INT){
+            int res=1;
+            for (int i=0;i<(int)stack[sp+1].getValue();i++){
+                res=res*(int)stack[sp].getValue();
+            }
+            stack[sp]=createInt(res);
+        }
+        if(stack[sp].getType()==Type.DEC){
+            Double res =1.0;
+            for (int i=0;i<(int)stack[sp+1].getValue();i++){
+                res=res*(int)stack[sp].getValue();
+            }
+            stack[sp]=createDouble(res);
+        }
     }
 
     private static void oprSqrt() throws Exception {
+        {
+            log("OPR Sqrt "+ stack[sp].getValue());
+            double i=0;
+            double x1,x2=1;
+            double m= (double)stack[sp].getValue();
+            while( (i*i) <= m ) {
+                i += 0.1;
+            }
+            x1=i;
+            for(int j=0;j<15;j++)
+            {
+                x2=m;
+                x2/=x1;
+                x2+=x1;
+                x2/=2;
+                x1=x2;
+            }
 
+            stack[sp]=createDouble(x2);
+        }
     }
 
     private static void oprCeil() throws Exception {
-
+        log("Ceiling "+ stack[sp].getValue());
+        if (stack[sp].getType()==Type.DEC){
+            if(((double)stack[sp].getValue()*10)%10 != 0){
+                stack[sp]=createDouble(((double)stack[sp].getValue()-((double)stack[sp].getValue()*10%10)/10)+1);
+            }
+        }
     }
 
     private static void oprFloor() throws Exception {
-
+        log("Floor "+ stack[sp].getValue());
+        if (stack[sp].getType()==Type.DEC){
+            if(((double)stack[sp].getValue()*10)%10 != 0){
+                stack[sp]=createDouble((double)stack[sp].getValue()-((double)stack[sp].getValue()*10%10)/10);
+            }
+        }
     }
 
     private static void oprRound() throws Exception {
-
+        log("Round "+ stack[sp].getValue());
+        if (stack[sp].getType()==Type.DEC){
+            if(((double)stack[sp].getValue()*10)%10 >= 5){
+                stack[sp]=createDouble(((double)stack[sp].getValue()-((double)stack[sp].getValue()*10%10)/10)+1);
+            }else {
+                stack[sp]=createDouble((double)stack[sp].getValue()-((double)stack[sp].getValue()*10%10)/10);
+            }
+        }
     }
 
     private static void oprSubstring() throws Exception {
