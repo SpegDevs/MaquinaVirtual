@@ -1,6 +1,5 @@
 package com.uca;
 
-import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -222,6 +221,9 @@ public class Main {
                             oprFileRead();
                             break;
                         case 30:
+                            oprFileClear();
+                            break;
+                        case 31:
                             oprCast();
                             break;
                     }
@@ -704,11 +706,45 @@ public class Main {
     }
 
     private static void oprFileWrite() throws Exception {
-
+        log("OPR: File Write");
+        sp -= 2;
+        FileManager file = new FileManager(stack[sp+1].getValue().toString());
+        file.createFile();
+        file.writeLine(stack[sp].getValue().toString());
+        file.closeFile();
     }
 
     private static void oprFileRead() throws Exception {
+        log("OPR: File Read");
+        FileManager file = new FileManager(stack[sp].getValue().toString());
+        file.openFile();
+        switch (i.getNi()) {
+            case 0:
+                stack[sp] = createInt(Integer.parseInt(file.getNextLine()));
+                break;
+            case 1:
+                stack[sp] = createDouble(Double.parseDouble(file.getNextLine()));
+                break;
+            case 2:
+                stack[sp] = createChar(file.getNextLine().charAt(0));
+                break;
+            case 3:
+                stack[sp] = createString(file.getNextLine());
+                break;
+            case 4:
+                stack[sp] = createBoolean(Boolean.parseBoolean(file.getNextLine()));
+                break;
+        }
+        file.closeFile();
+    }
 
+    private static void oprFileClear() throws Exception {
+        log("OPR: File Clear");
+        FileManager file = new FileManager(stack[sp].getValue().toString());
+        file.createFile();
+        file.clearFile();
+        file.closeFile();
+        sp--;
     }
 
     private static void oprCast() throws Exception {
