@@ -695,7 +695,12 @@ public class Main {
     }
 
     private static void oprSubstring() throws Exception {
-
+        sp--;
+        sp--;
+        String subs= (String) stack[sp].getValue();
+        String newString;
+        newString=subs.substring((int)stack[sp+1].getValue(),(int)stack[sp+2].getValue());
+        stack[sp]=createString(newString);
     }
 
     private static void oprFileWrite() throws Exception {

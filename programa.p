@@ -18,7 +18,8 @@ LIT 0 1
 OPR 0 3
 ALM 0 9
 SAL 0 6
+LIT 3 "xholax"
 LIT 0 1
-LIT 0 10
-OPR 0 20
+LIT 0 5
+OPR 0 27
 OPR 0 1
